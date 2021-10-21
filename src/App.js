@@ -1,25 +1,41 @@
-import logo from './logo.svg';
-import './App.css';
+import {BrowserRouter, Route, Switch, Redirect} from 'react-router-dom'
+import Home from "./pages/Home"
+import Profile from "./pages/Profile"
+import {connect} from "react-redux";
+import {useEffect} from "react"
+import {setUserData} from "./modules/users";
+import {api} from './api'
+import { createBrowserHistory } from "history"
 
-function App() {
-  return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
-  );
+function App({userId, setUserData}) {
+    console.log(userId)
+
+    useEffect(() => {
+        api.getData().then(res => {
+            if (!res?.user?.id) {
+                return
+            }
+            console.log(res)
+            setUserData(res.user)
+        })
+    }, [])
+
+    return (
+        <BrowserRouter history={createBrowserHistory()}>
+            <Switch>
+                <Route exact path='/' component={Home} />
+                <Route exact path='/profile' component={Profile}/>
+            </Switch>
+        </BrowserRouter>
+    )
 }
+// Получать данные из стора
+const mapStateToProps = ({users}) => {
+    return { userId: users.user.id }
+}
+// Получаем функции для обновления стора
+const mapDispatchToProps = (dispatch) => ({
+    setUserData: (data) => dispatch(setUserData(data)),
+})
 
-export default App;
+export default connect(mapStateToProps, mapDispatchToProps)(App)
